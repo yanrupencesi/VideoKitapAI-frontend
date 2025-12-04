@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>VideoKitapAI – Kitap Asistanı</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="reader-container">
+  <h2 id="bookTitle">Seçilen Kitap</h2>
+
+  <textarea id="userQuestion"
+    placeholder="Bu kitap ne anlatmak istiyor, nasıl faydalanabilirim?"></textarea>
+
+  <button onclick="askAI()">Soruyu Gönder</button>
+
+  <div class="ai-response" id="aiResponse"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
