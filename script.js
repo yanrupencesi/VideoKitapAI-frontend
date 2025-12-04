@@ -1,5 +1,5 @@
 // ----------------- BACKEND URL'İ -----------------
-const API_BASE = "https://videokitapai-backend.onrender.com"; 
+const API_BASE = "https://videokitapai-backend-1.onrender.com"; 
 // Render'dan alacağın URL'yi buraya yazacaksın. 
 // Lokalde test ederken: "http://127.0.0.1:8000" kullanabilirsin.
 
