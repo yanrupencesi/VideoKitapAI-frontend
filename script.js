@@ -8,6 +8,7 @@ const COVER_MAP = {
   2: "savas.png",
   3: "akis.png",
   4: "zenginbaba.png",
+  5: "dusunvezenginol.png",
 };
 
 // ------------ ANASAYFA: PROFİL FORMUNU KAYDET + ÖNERİ AL ------------
