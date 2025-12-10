@@ -17,7 +17,7 @@ const COVER_MAP = {
 // ------------ ANA SAYFA: KİTAPLARI LİSTELE (SADECE GÖRSEL) ------------
 async function loadBooks() {
   const grid = document.getElementById("bookGrid");
-  if (!grid) return; // reader.html'deysek çalışmasın
+  if (!grid) return;
 
   try {
     const res = await fetch(`${API_BASE}/books`);
@@ -29,19 +29,12 @@ async function loadBooks() {
 
       const img = document.createElement("img");
       const coverFile = COVER_MAP[book.id];
-      if (coverFile) {
-        img.src = coverFile; // aynı klasördeki png
-      } else {
-        img.src = `https://via.placeholder.com/300x260?text=${encodeURIComponent(
-          book.title
-        )}`;
-      }
+      img.src = coverFile || `https://via.placeholder.com/300x260?text=${encodeURIComponent(book.title)}`;
       img.alt = book.title;
 
       const title = document.createElement("h3");
       title.textContent = book.title;
 
-      // Sadece görsel + başlık, tıklama yok
       div.appendChild(img);
       div.appendChild(title);
 
@@ -60,7 +53,6 @@ async function handleProfileSubmit(event) {
   const challenge = document.getElementById("challengeHome")?.value || "";
   const timePerDay = document.getElementById("timePerDayHome")?.value || "15dk";
 
-  // Profil bilgilerini daha sonra da kullanacağız
   localStorage.setItem("profileGoal", goal);
   localStorage.setItem("profileChallenge", challenge);
   localStorage.setItem("profileTimePerDay", timePerDay);
@@ -70,15 +62,14 @@ async function handleProfileSubmit(event) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        goal: goal,
-        challenge: challenge,
+        goal,
+        challenge,
         time_per_day: timePerDay,
       }),
     });
 
     const data = await res.json();
 
-    // Backend'in önerdiği kitap ve sorular:
     const bookId = data.recommended_book_id;
     const bookTitle = data.book_title;
     const qList = data.questions || [];
@@ -93,45 +84,32 @@ async function handleProfileSubmit(event) {
       localStorage.setItem("q2", qList[1]);
       localStorage.setItem("q3", qList[2]);
     } else {
-      // Yine de temizleyelim
       localStorage.removeItem("q1");
       localStorage.removeItem("q2");
       localStorage.removeItem("q3");
     }
 
-    // reader.html sayfasına geç
     window.location.href = "reader.html";
   } catch (err) {
     console.error("Profil gönderirken hata:", err);
-    alert(
-      "Bilgilerini gönderirken bir hata oluştu. Lütfen daha sonra tekrar dene."
-    );
+    alert("Bilgilerini gönderirken bir hata oluştu. Lütfen daha sonra tekrar dene.");
   }
 }
 
-// Eğer index.html içinde eski alışkanlıkla onsubmit="saveProfileFromHome(event)" yazılıysa bozulmasın diye:
 function saveProfileFromHome(event) {
   return handleProfileSubmit(event);
 }
 
 // ------------ READER SAYFASI: VERİLERİ YÜKLE ------------
 function initReader() {
-  // Sadece reader.html'de çalışsın
   if (!window.location.pathname.endsWith("reader.html")) return;
 
-  const title =
-    localStorage.getItem("selectedBookTitle") || "Senin İçin Önerilen Kitap";
-  const bookId = parseInt(
-    localStorage.getItem("selectedBookId") || "0",
-    10
-  );
+  const title = localStorage.getItem("selectedBookTitle") || "Senin İçin Önerilen Kitap";
+  const bookId = parseInt(localStorage.getItem("selectedBookId") || "0");
 
   const titleEl = document.getElementById("bookTitle");
-  if (titleEl) {
-    titleEl.textContent = title;
-  }
+  if (titleEl) titleEl.textContent = title;
 
-  // Profil bilgilerini doldur
   const goalStored = localStorage.getItem("profileGoal") || "";
   const challengeStored = localStorage.getItem("profileChallenge") || "";
   const timeStored = localStorage.getItem("profileTimePerDay") || "15dk";
@@ -144,7 +122,6 @@ function initReader() {
   if (challengeEl) challengeEl.value = challengeStored;
   if (timeEl) timeEl.value = timeStored;
 
-  // Önerilen soruları doldur (varsa)
   const q1Stored = localStorage.getItem("q1") || "";
   const q2Stored = localStorage.getItem("q2") || "";
   const q3Stored = localStorage.getItem("q3") || "";
@@ -153,15 +130,12 @@ function initReader() {
   const q2El = document.getElementById("q2");
   const q3El = document.getElementById("q3");
 
-  if (q1El && q2El && q3El) {
-    if (q1Stored || q2Stored || q3Stored) {
-      q1El.value = q1Stored;
-      q2El.value = q2Stored;
-      q3El.value = q3Stored;
-    } else if (bookId) {
-      // Eğer backend'ten soru gelmediyse kitaba göre varsayılan soruları doldur
-      fillDefaultQuestions(bookId);
-    }
+  if (q1Stored || q2Stored || q3Stored) {
+    q1El.value = q1Stored;
+    q2El.value = q2Stored;
+    q3El.value = q3Stored;
+  } else if (bookId) {
+    fillDefaultQuestions(bookId);
   }
 }
 
@@ -173,77 +147,41 @@ function fillDefaultQuestions(bookId) {
   if (!q1 || !q2 || !q3) return;
 
   if (bookId === 1) {
-    // Atomik Alışkanlıklar
-    q1.value =
-      "Hedefime ulaşmak için hangi küçük alışkanlıklarla başlayabilirim?";
-    q2.value =
-      "Erteleme sorunumu bu kitabı kullanarak nasıl çözebilirim?";
-    q3.value =
-      "Bugün uygulayabileceğim 3 küçük alışkanlık önerir misin?";
+    q1.value = "Hedefime ulaşmak için hangi küçük alışkanlıklarla başlayabilirim?";
+    q2.value = "Erteleme sorunumu bu kitabı kullanarak nasıl çözebilirim?";
+    q3.value = "Bugün uygulayabileceğim 3 küçük alışkanlık önerir misin?";
   } else if (bookId === 2) {
-    // Savaş Sanatı
-    q1.value =
-      "Stratejik düşünme becerimi geliştirmek için nereden başlamalıyım?";
-    q2.value =
-      "Şu an yaşadığım zorluklara hangi stratejiler daha uygun olur?";
-    q3.value =
-      "Bugün uygulayabileceğim 2-3 basit strateji örneği verebilir misin?";
+    q1.value = "Stratejik düşünme becerimi geliştirmek için nereden başlamalıyım?";
+    q2.value = "Şu an yaşadığım zorluklara hangi stratejiler daha uygun olur?";
+    q3.value = "Bugün uygulayabileceğim 2-3 basit strateji örneği verebilir misin?";
   } else if (bookId === 3) {
-    // Akış (Flow)
-    q1.value =
-      "Akış hali nedir ve benim hayatımda daha çok akış yaşayabilmem için nereden başlamalıyım?";
-    q2.value =
-      "Odaklanma veya motivasyon düşüşü yaşadığımda akış haline dönmek için neler yapabilirim?";
-    q3.value =
-      "Bugün akış haline yaklaşmak için yapabileceğim 2-3 küçük egzersiz ne?";
+    q1.value = "Akış hali nedir ve hayatımda daha çok akış yaratmak için nereden başlamalıyım?";
+    q2.value = "Odaklanma sorunu yaşadığımda akış haline nasıl dönebilirim?";
+    q3.value = "Bugün akışa yaklaşmak için yapabileceğim 2–3 egzersiz önerir misin?";
   } else if (bookId === 4) {
-    // Zengin Baba Yoksul Baba
-    q1.value =
-      "Bu kitap, para ve zenginlik hakkında bakış açımı nasıl değiştirebilir?";
-    q2.value =
-      "Finansal özgürlük için bugün başlayabileceğim en basit adımlar neler?";
-    q3.value =
-      "Gelirimi artırmak veya daha bilinçli harcama yapmak için bu kitaptan hangi prensipleri uygulayabilirim?";
+    q1.value = "Bu kitap, para ve zenginlik bakış açımı nasıl değiştirebilir?";
+    q2.value = "Finansal özgürlüğe başlamak için hangi küçük adımı uygulamalıyım?";
+    q3.value = "Gelirimi artırmak için hangi prensipleri bugün kullanabilirim?";
   } else if (bookId === 5) {
-    // Düşün ve Zengin Ol
-    q1.value =
-      "Bu kitap, hedef belirleme konusunda bana nasıl yardımcı olabilir?";
-    q2.value =
-      "Düşünce gücünü kullanarak motivasyonumu nasıl artırabilirim?";
-    q3.value =
-      "Başarı için bugün uygulayabileceğim 3 adımı söyleyebilir misin?";
+    q1.value = "Zengin olma hedefime ulaşmak için bu kitap hangi adımları öneriyor?";
+    q2.value = "Düşünce gücünü günlük hayatıma nasıl uygularım?";
+    q3.value = "Bugün finansal gelişim için uygulayabileceğim 3 adım verebilir misin?";
   } else if (bookId === 6) {
-    // Alışkanlıkların Gücü
-    q1.value =
-      "Bu kitap, alışkanlık döngüsünü (ipucu–rutin–ödül) anlamamda nasıl yardımcı olabilir?";
-    q2.value =
-      "İş ve özel hayatımdaki kötü alışkanlıkları değiştirmek için hangi adımları uygulamalıyım?";
-    q3.value =
-      "Bugün hayatımda test edebileceğim küçük bir alışkanlık deneyi önerir misin?";
+    q1.value = "Alışkanlık döngüsünü (ipucu–rutin–ödül) kendi hayatımda nasıl kurabilirim?";
+    q2.value = "Kötü alışkanlıklarımı değiştirmek için nereden başlamalıyım?";
+    q3.value = "Bugün test edebileceğim küçük bir alışkanlık deneyi önerir misin?";
   } else if (bookId === 7) {
-    // İknanın Psikolojisi
-    q1.value =
-      "İknanın Psikolojisi'ndeki temel ikna prensiplerini günlük hayatımda nasıl kullanabilirim?";
-    q2.value =
-      "Satış veya pazarlama alanında çalışıyorum, bu kitap bana müşterilerle iletişimde nasıl avantaj sağlar?";
-    q3.value =
-      "İnsanları manipüle etmeden, etik şekilde daha etkileyici olmak için neler yapabilirim?";
+    q1.value = "Kitaptaki ikna prensiplerini günlük hayatımda nasıl kullanabilirim?";
+    q2.value = "Bu prensipler iş ilişkilerimde bana nasıl avantaj sağlar?";
+    q3.value = "Etik şekilde daha etkileyici olmak için hangi adımları uygulamalıyım?";
   } else if (bookId === 8) {
-    // Pür Dikkat (Deep Work)
-    q1.value =
-      "Bu kitap, dağılmış dikkatimi toparlayıp daha derin çalışmam için bana nasıl yol gösterir?";
-    q2.value =
-      "Sosyal medya ve bildirimler yüzünden odaklanamıyorum, Pür Dikkat'e göre nereden başlamalıyım?";
-    q3.value =
-      "Bugün uygulayabileceğim 2–3 'derin çalışma' seansı planı verebilir misin?";
+    q1.value = "Odaklanma becerimi geliştirmek için bugün ne yapabilirim?";
+    q2.value = "Dikkat dağıtıcıları azaltmak için kitap ne öneriyor?";
+    q3.value = "Derin çalışmaya başlamak için uygulayabileceğim bir günlük plan verebilir misin?";
   } else {
-    // Genel kişisel gelişim soruları
-    q1.value =
-      "Bu kitap benim hedeflerime ulaşmamda nasıl yardımcı olabilir?";
-    q2.value =
-      "Şu an yaşadığım en büyük zorlanmayı çözmek için bu kitaptan hangi bölümler işime yarar?";
-    q3.value =
-      "Bu kitaptan bugün uygulayabileceğim en basit 3 adımı söyler misin?";
+    q1.value = "Bu kitap hedeflerime ulaşmamda nasıl yardımcı olabilir?";
+    q2.value = "Yaşadığım zorlanmayı çözmek için hangi bölümler işe yarar?";
+    q3.value = "Bu kitaptan bugün uygulayabileceğim 3 adım söyler misin?";
   }
 }
 
@@ -255,24 +193,20 @@ async function askAI() {
   if (!questionInput || !responseBox) return;
 
   const question = questionInput.value.trim();
-  const bookId = parseInt(
-    localStorage.getItem("selectedBookId") || "0",
-    10
-  );
+  const bookId = parseInt(localStorage.getItem("selectedBookId") || "0");
 
   if (!bookId) {
-    responseBox.textContent =
-      "Önce anasayfadaki formu doldurup sana uygun kitabı seçtirmelisin.";
+    responseBox.textContent = "Önce anasayfadaki formu doldurmalısın.";
     return;
   }
 
   if (!question) {
     responseBox.textContent =
-      "Lütfen kitaba dair bir soru yaz (örneğin: 'Bu kitap ne anlatıyor ve benim hayatıma nasıl uyarlanabilir?').";
+      "Lütfen bir soru yaz (örnek: Bu kitap hedefime ulaşmamda nasıl yardımcı olabilir?)";
     return;
   }
 
-  responseBox.textContent = "Yapay zeka düşünürken lütfen bekle...";
+  responseBox.textContent = "Yapay zeka yanıt üretiyor, lütfen bekle...";
 
   try {
     const res = await fetch(`${API_BASE}/ai/ask`, {
@@ -280,20 +214,20 @@ async function askAI() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         book_id: bookId,
-        question: question,
+        question,
       }),
     });
 
     const data = await res.json();
-    responseBox.textContent = data.answer || "Boş cevap döndü.";
+    responseBox.textContent = data.answer || "Boş bir cevap döndü.";
   } catch (err) {
     console.error(err);
     responseBox.textContent =
-      "Bir hata oluştu. Backend (VideoKitapAI backend) çalışıyor mu, kontrol et.";
+      "Hata oluştu. Backend çalışıyor mu kontrol et.";
   }
 }
 
-// ------------ SAYFA YÜKLENİNCE ÇALIŞACAKLAR ------------
+// ------------ SAYFA YÜKLENİNCE ------------
 window.addEventListener("DOMContentLoaded", () => {
   loadBooks();
   initReader();
